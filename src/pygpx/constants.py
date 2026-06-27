@@ -15,3 +15,8 @@ class GpxTag(StrEnum):
     TIMESTAMP = "time"
     TEMPERATURE = ".//gpxtpx:atemp"
     HEART_RATE = ".//gpxtpx:hr"
+
+
+EARTH_RADIUS_KM = 6371
+MOVING_TIME_KM_PER_HOUR_THRESHOLD = 0.5
+SECONDS_IN_HOUR = 3600
