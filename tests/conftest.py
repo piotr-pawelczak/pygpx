@@ -9,7 +9,14 @@ from tests.helpers import gpx_tag, gpxtpx_tag
 
 @pytest.fixture
 def ride_gpx_path() -> Path:
-    return Path(__file__).parent.parent / "data" / "ride.gpx"
+    return Path(__file__).parent / "data" / "ride.gpx"
+
+
+@pytest.fixture
+def invalid_xml_path(tmp_path: Path) -> Path:
+    file = tmp_path / "invalid.gpx"
+    file.write_text("<?xml version=\"1.0\"?><gpx><unclosed>")
+    return file
 
 
 @pytest.fixture
