@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-import datetime
+from datetime import datetime
 
 
 class Coordinates(BaseModel):
@@ -10,7 +10,7 @@ class Coordinates(BaseModel):
 class TrackPoint(BaseModel):
     coordinates: Coordinates
     elevation: float | None = None
-    timestamp: datetime.datetime | None = None
+    timestamp: datetime | None = None
     heart_rate: int | None = None
     temperature: float | None = None
 
