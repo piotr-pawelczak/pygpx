@@ -47,23 +47,6 @@ class TrackSegment(BaseModel):
 
     points: list[TrackPoint]
 
-    def calculate_distance(self) -> float:
-        """Compute the total distance covered across all points in this segment.
-
-        Returns:
-            Distance in kilometres, or 0.0 if the segment has fewer than two points.
-        """
-        if not self.points:
-            return 0.0
-
-        previous_coords = self.points[0].coordinates
-        distance = 0.0
-        for point in self.points[1:]:
-            current_coords = point.coordinates
-            distance += previous_coords.distance_to(current_coords)
-            previous_coords = current_coords
-        return distance
-
 
 class Track(BaseModel):
     """A GPX track consisting of one or more segments."""

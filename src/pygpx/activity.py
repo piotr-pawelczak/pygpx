@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pygpx import parse_gpx
 from pygpx.constants import MOVING_TIME_KM_PER_HOUR_THRESHOLD, SECONDS_IN_HOUR
+from pygpx.geo import calculate_total_distance
 from pygpx.models import Track, TrackPoint
 from pygpx.stats import ElevationStats, HeartRateStats, VelocityStats
 
@@ -127,11 +128,7 @@ class Activity:
         Returns:
             Total distance in kilometres.
         """
-        return sum(
-            segment.calculate_distance()
-            for track in self._tracks
-            for segment in track.segments
-        )
+        return calculate_total_distance(self._tracks)
 
     def get_elapsed_time(self) -> timedelta:
         """Compute elapsed time from first to last recorded point.
