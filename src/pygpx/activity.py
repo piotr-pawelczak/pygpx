@@ -1,5 +1,6 @@
 from datetime import timedelta
 from functools import cached_property
+from itertools import pairwise
 from pathlib import Path
 
 from pygpx import parse_gpx
@@ -46,21 +47,17 @@ class Activity:
         if not points:
             return ()
 
-        previous_point = points[0]
         intervals: list[tuple[float, float]] = []
 
-        for point in points[1:]:
+        for previous_point, point in pairwise(points):
             if point.timestamp is None or previous_point.timestamp is None:
-                previous_point = point
                 continue
 
             time_seconds = (point.timestamp - previous_point.timestamp).total_seconds()
-            distance = previous_point.coordinates.distance_to(point.coordinates)
-            previous_point = point
-
             if time_seconds == 0:
                 continue
 
+            distance = previous_point.coordinates.distance_to(point.coordinates)
             velocity = distance / (time_seconds / SECONDS_IN_HOUR)
             intervals.append((velocity, time_seconds))
 
