@@ -17,6 +17,15 @@ class GpxTag(StrEnum):
     HEART_RATE = ".//gpxtpx:hr"
 
 
+class DistanceUnit(StrEnum):
+    KM = "km"
+    MILES = "miles"
+
+
 EARTH_RADIUS_KM = 6371
+EARTH_RADIUS_MILES = 3958.8
+
 MOVING_TIME_KM_PER_HOUR_THRESHOLD = 0.5
+MOVING_TIME_MILES_PER_HOUR_THRESHOLD = 0.3
+
 SECONDS_IN_HOUR = 3600

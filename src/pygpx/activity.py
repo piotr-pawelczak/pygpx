@@ -4,7 +4,12 @@ from itertools import pairwise
 from pathlib import Path
 
 from pygpx import parse_gpx
-from pygpx.constants import MOVING_TIME_KM_PER_HOUR_THRESHOLD, SECONDS_IN_HOUR
+from pygpx.constants import (
+    DistanceUnit,
+    MOVING_TIME_KM_PER_HOUR_THRESHOLD,
+    MOVING_TIME_MILES_PER_HOUR_THRESHOLD,
+    SECONDS_IN_HOUR,
+)
 from pygpx.geo import calculate_total_distance
 from pygpx.models import Track, TrackPoint
 from pygpx.stats import ElevationStats, HeartRateStats, VelocityStats
@@ -13,13 +18,15 @@ from pygpx.stats import ElevationStats, HeartRateStats, VelocityStats
 class Activity:
     """Represents a parsed GPX activity and provides methods for computing stats."""
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path, unit: DistanceUnit = DistanceUnit.KM) -> None:
         """Parse a GPX file and initialise the activity.
 
         Args:
             file_path: Path to the GPX file to load.
+            unit: Distance unit for velocity and distance calculations (default: km).
         """
         self._tracks: list[Track] = parse_gpx(file_path)
+        self._unit = unit
 
     @cached_property
     def _all_points(self) -> tuple[TrackPoint, ...]:
@@ -39,10 +46,10 @@ class Activity:
         """Compute per-interval (velocity, time_seconds) pairs, skipping invalid intervals.
 
         Intervals where either endpoint has no timestamp, or where elapsed time is zero,
-        are excluded. Velocity is expressed in km/h.
+        are excluded. Velocity unit matches the activity's configured distance unit.
 
         Returns:
-            A tuple of (velocity_km_h, time_seconds) pairs.
+            A tuple of (velocity, time_seconds) pairs.
         """
         points = self._all_points
         if not points:
@@ -58,11 +65,24 @@ class Activity:
             if time_seconds == 0:
                 continue
 
-            distance = previous_point.coordinates.distance_to(point.coordinates)
+            distance = previous_point.coordinates.distance_to(point.coordinates, self._unit)
             velocity = distance / (time_seconds / SECONDS_IN_HOUR)
             intervals.append((velocity, time_seconds))
 
         return tuple(intervals)
+
+    @property
+    def _moving_time_threshold(self) -> float:
+        """Velocity threshold below which the activity is considered stopped.
+
+        Returns:
+            Threshold in km/h or mph depending on configured unit.
+        """
+        return (
+            MOVING_TIME_KM_PER_HOUR_THRESHOLD
+            if self._unit == DistanceUnit.KM
+            else MOVING_TIME_MILES_PER_HOUR_THRESHOLD
+        )
 
     def get_heart_rate_stats(self) -> HeartRateStats | None:
         """Compute min, max and average heart rate across all points.
@@ -126,9 +146,9 @@ class Activity:
         """Compute total distance covered across all tracks and segments.
 
         Returns:
-            Total distance in kilometres.
+            Total distance in the configured unit (km or miles).
         """
-        return calculate_total_distance(self._tracks)
+        return calculate_total_distance(self._tracks, self._unit)
 
     def get_elapsed_time(self) -> timedelta:
         """Compute elapsed time from first to last recorded point.
@@ -149,24 +169,24 @@ class Activity:
         return end_time - start_time
 
     def get_velocities(self) -> list[float]:
-        """Return the velocity (km/h) for each valid recorded interval.
+        """Return the velocity for each valid recorded interval.
 
         Returns:
-            A list of velocities in km/h.
+            A list of velocities in km/h or mph depending on configured unit.
         """
         return [v for v, _ in self._velocity_intervals]
 
     def get_moving_time(self) -> timedelta:
         """Compute moving time by summing intervals where velocity exceeds the threshold.
 
-        Intervals with velocity <= MOVING_TIME_KM_PER_HOUR_THRESHOLD are considered stops.
+        The threshold depends on the configured distance unit.
 
         Returns:
             Moving time as a timedelta.
         """
         moving_time = sum(
             t for v, t in self._velocity_intervals
-            if v > MOVING_TIME_KM_PER_HOUR_THRESHOLD
+            if v > self._moving_time_threshold
         )
         return timedelta(seconds=moving_time)
 
@@ -175,7 +195,7 @@ class Activity:
 
         Returns:
             A VelocityStats instance with max, average_total and average_moving
-            velocities in km/h.
+            velocities in the configured unit (km/h or mph).
         """
         velocities = self.get_velocities()
         total_distance = self.get_total_distance()

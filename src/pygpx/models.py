@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from pygpx.constants import EARTH_RADIUS_KM
+from pygpx.constants import DistanceUnit, EARTH_RADIUS_KM, EARTH_RADIUS_MILES
 
 
 class Coordinates(BaseModel):
@@ -12,15 +12,17 @@ class Coordinates(BaseModel):
     latitude: float
     longitude: float
 
-    def distance_to(self, other: "Coordinates") -> float:
+    def distance_to(self, other: "Coordinates", unit: DistanceUnit = DistanceUnit.KM) -> float:
         """Compute the distance to another coordinate using the Haversine formula.
 
         Args:
             other: The target coordinates.
+            unit: The distance unit to use (default: km).
 
         Returns:
-            Distance in kilometres.
+            Distance in the specified unit.
         """
+        earth_radius = EARTH_RADIUS_KM if unit == DistanceUnit.KM else EARTH_RADIUS_MILES
         coords = [self.latitude, self.longitude, other.latitude, other.longitude]
         lat_1, lon_1, lat_2, lon_2 = map(math.radians, coords)
         diff_lat = lat_2 - lat_1
@@ -29,7 +31,7 @@ class Coordinates(BaseModel):
         a = math.sin(diff_lat / 2) ** 2 + math.cos(lat_1) * math.cos(lat_2) * math.sin(diff_lon / 2) ** 2
         c = 2 * math.asin(math.sqrt(a))
 
-        return c * EARTH_RADIUS_KM
+        return c * earth_radius
 
 
 class TrackPoint(BaseModel):
