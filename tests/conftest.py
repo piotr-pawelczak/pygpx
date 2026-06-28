@@ -1,7 +1,8 @@
-import pytest
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 from xml.etree.ElementTree import Element, SubElement
+
+import pytest
 
 from pygpx.parser import Namespaces
 from tests.helpers import gpx_tag, gpxtpx_tag
@@ -15,7 +16,7 @@ def ride_gpx_path() -> Path:
 @pytest.fixture
 def invalid_xml_path(tmp_path: Path) -> Path:
     file = tmp_path / "invalid.gpx"
-    file.write_text("<?xml version=\"1.0\"?><gpx><unclosed>")
+    file.write_text('<?xml version="1.0"?><gpx><unclosed>')
     return file
 
 
@@ -64,7 +65,9 @@ def make_point_element():
 
 
 @pytest.fixture
-def make_segment_element(make_point_element: Callable[..., Element]) -> Callable[..., Element]:
+def make_segment_element(
+    make_point_element: Callable[..., Element],
+) -> Callable[..., Element]:
     def factory(points: list[Element] | None = None) -> Element:
         segment = Element(gpx_tag("trkseg"))
         if points is None:

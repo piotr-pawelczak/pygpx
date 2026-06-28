@@ -1,6 +1,6 @@
 from pathlib import Path
-from pygpx.activity import Activity
 
+from pygpx.activity import Activity
 
 PACKAGE_ROOT = Path(__file__).parent.parent.parent
 DATA_DIR = PACKAGE_ROOT / "data"

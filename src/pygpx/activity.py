@@ -5,10 +5,10 @@ from pathlib import Path
 
 from pygpx import parse_gpx
 from pygpx.constants import (
-    DistanceUnit,
     MOVING_TIME_KM_PER_HOUR_THRESHOLD,
     MOVING_TIME_MILES_PER_HOUR_THRESHOLD,
     SECONDS_IN_HOUR,
+    DistanceUnit,
 )
 from pygpx.geo import calculate_total_distance
 from pygpx.models import Track, TrackPoint
@@ -43,7 +43,7 @@ class Activity:
 
     @cached_property
     def _velocity_intervals(self) -> tuple[tuple[float, float], ...]:
-        """Compute per-interval (velocity, time_seconds) pairs, skipping invalid intervals.
+        """Compute per-interval (velocity, time_seconds) pairs, skipping invalid ones.
 
         Intervals where either endpoint has no timestamp, or where elapsed time is zero,
         are excluded. Velocity unit matches the activity's configured distance unit.
@@ -65,7 +65,9 @@ class Activity:
             if time_seconds == 0:
                 continue
 
-            distance = previous_point.coordinates.distance_to(point.coordinates, self._unit)
+            distance = previous_point.coordinates.distance_to(
+                point.coordinates, self._unit
+            )
             velocity = distance / (time_seconds / SECONDS_IN_HOUR)
             intervals.append((velocity, time_seconds))
 
@@ -93,7 +95,9 @@ class Activity:
         Returns:
             A HeartRateStats instance, or None.
         """
-        heart_rates = [p.heart_rate for p in self._all_points if p.heart_rate is not None]
+        heart_rates = [
+            p.heart_rate for p in self._all_points if p.heart_rate is not None
+        ]
 
         if not heart_rates:
             return None
@@ -177,7 +181,7 @@ class Activity:
         return [v for v, _ in self._velocity_intervals]
 
     def get_moving_time(self) -> timedelta:
-        """Compute moving time by summing intervals where velocity exceeds the threshold.
+        """Compute moving time by summing intervals above the velocity threshold.
 
         The threshold depends on the configured distance unit.
 
@@ -185,8 +189,7 @@ class Activity:
             Moving time as a timedelta.
         """
         moving_time = sum(
-            t for v, t in self._velocity_intervals
-            if v > self._moving_time_threshold
+            t for v, t in self._velocity_intervals if v > self._moving_time_threshold
         )
         return timedelta(seconds=moving_time)
 

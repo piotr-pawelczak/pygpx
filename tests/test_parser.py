@@ -1,13 +1,13 @@
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from xml.etree.ElementTree import Element, ParseError
 
+import pytest
 from pydantic import ValidationError
 
-from tests.helpers import gpx_tag
 from pygpx.models import Track, TrackPoint, TrackSegment
 from pygpx.parser import parse_gpx, parse_point, parse_segment, parse_track
+from tests.helpers import gpx_tag
 
 
 class TestParsePoint:
@@ -28,7 +28,7 @@ class TestParsePoint:
         assert result.coordinates.latitude == pytest.approx(50.00747)
         assert result.coordinates.longitude == pytest.approx(19.957913)
         assert result.elevation == pytest.approx(229.6)
-        assert result.timestamp == datetime(2026, 6, 16, 14, 46, 57, tzinfo=timezone.utc)
+        assert result.timestamp == datetime(2026, 6, 16, 14, 46, 57, tzinfo=UTC)
         assert result.heart_rate == 130
         assert result.temperature == pytest.approx(23.0)
 
@@ -76,7 +76,9 @@ class TestParsePoint:
 
 
 class TestParseSegment:
-    def test_with_single_point(self, make_segment_element, make_point_element, namespaces):
+    def test_with_single_point(
+        self, make_segment_element, make_point_element, namespaces
+    ):
         # given
         segment = make_segment_element(points=[make_point_element()])
 
@@ -111,9 +113,9 @@ class TestParseSegment:
 
     def test_point_content(self, make_segment_element, make_point_element, namespaces):
         # given
-        segment = make_segment_element(points=[
-            make_point_element(lat="48.8566", lon="2.3522", elevation="35.0")
-        ])
+        segment = make_segment_element(
+            points=[make_point_element(lat="48.8566", lon="2.3522", elevation="35.0")]
+        )
 
         # when
         result = parse_segment(segment, namespaces)
@@ -151,9 +153,13 @@ class TestParseTrack:
         assert result.type is None
         assert len(result.segments) == 1
 
-    def test_with_multiple_segments(self, make_track_element, make_segment_element, namespaces):
+    def test_with_multiple_segments(
+        self, make_track_element, make_segment_element, namespaces
+    ):
         # given
-        track = make_track_element(segments=[make_segment_element(), make_segment_element()])
+        track = make_track_element(
+            segments=[make_segment_element(), make_segment_element()]
+        )
 
         # when
         result = parse_track(track, namespaces)
@@ -161,11 +167,17 @@ class TestParseTrack:
         # then
         assert len(result.segments) == 2
 
-    def test_segment_content(self, make_track_element, make_segment_element, make_point_element, namespaces):
+    def test_segment_content(
+        self, make_track_element, make_segment_element, make_point_element, namespaces
+    ):
         # given
-        track = make_track_element(segments=[
-            make_segment_element(points=[make_point_element(lat="48.8566", lon="2.3522")])
-        ])
+        track = make_track_element(
+            segments=[
+                make_segment_element(
+                    points=[make_point_element(lat="48.8566", lon="2.3522")]
+                )
+            ]
+        )
 
         # when
         result = parse_track(track, namespaces)

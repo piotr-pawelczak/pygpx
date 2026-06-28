@@ -8,7 +8,11 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "pre-commit>=4.6.0",
     "pydantic>=2.13.4",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.20",
+    "ty>=0.0.55",
 ]
 
 [build-system]
@@ -22,3 +26,24 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--cov=src/pygpx --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "W",   # pycodestyle warnings
+    "UP",  # pyupgrade
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ty.environment]
+python-version = "3.11"
+extra-paths = ["."]

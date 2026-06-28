@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from pygpx.constants import GpxTag
-from pygpx.models import Coordinates, TrackPoint, Track, TrackSegment
+from pygpx.models import Coordinates, Track, TrackPoint, TrackSegment
 
 Namespaces: TypeAlias = dict[str, str]
 
@@ -36,24 +36,29 @@ def parse_point(point: Element, ns: Namespaces) -> TrackPoint:
         A TrackPoint instance populated with the point's data.
 
     Raises:
-        ValidationError: If required fields (latitude, longitude) are missing or invalid.
+        ValidationError: If required fields (lat, lon) are missing or invalid.
     """
     return TrackPoint(
         coordinates=Coordinates(
             latitude=point.get(GpxTag.LATITUDE),  # type: ignore
             longitude=point.get(GpxTag.LONGITUDE),  # type: ignore
         ),
-        elevation=point.findtext(GpxTag.ELEVATION, namespaces=ns),
-        timestamp=point.findtext(GpxTag.TIMESTAMP, namespaces=ns),
-        temperature=point.findtext(GpxTag.TEMPERATURE, namespaces=ns),
-        heart_rate=point.findtext(GpxTag.HEART_RATE, namespaces=ns),
+        elevation=point.findtext(
+            GpxTag.ELEVATION, namespaces=ns
+        ),  # ty: ignore[invalid-argument-type]
+        timestamp=point.findtext(
+            GpxTag.TIMESTAMP, namespaces=ns
+        ),  # ty: ignore[invalid-argument-type]
+        temperature=point.findtext(
+            GpxTag.TEMPERATURE, namespaces=ns
+        ),  # ty: ignore[invalid-argument-type]
+        heart_rate=point.findtext(
+            GpxTag.HEART_RATE, namespaces=ns
+        ),  # ty: ignore[invalid-argument-type]
     )
 
 
-def parse_segment(
-    segment: Element,
-    ns: Namespaces
-) -> TrackSegment:
+def parse_segment(segment: Element, ns: Namespaces) -> TrackSegment:
     """Parse a single GPX track segment element into a TrackSegment model.
 
     Args:
@@ -67,10 +72,7 @@ def parse_segment(
     return TrackSegment(points=[parse_point(p, ns) for p in points])
 
 
-def parse_track(
-    track: Element,
-    ns: Namespaces
-) -> Track:
+def parse_track(track: Element, ns: Namespaces) -> Track:
     """Parse a single GPX track element into a Track model.
 
     Args:
@@ -86,7 +88,7 @@ def parse_track(
     return Track(
         name=name,
         type=activity_type,
-        segments=[parse_segment(segment, ns) for segment in segments]
+        segments=[parse_segment(segment, ns) for segment in segments],
     )
 
 

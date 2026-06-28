@@ -4,7 +4,9 @@ from pygpx.constants import DistanceUnit
 from pygpx.models import Track, TrackSegment
 
 
-def calculate_segment_distance(segment: TrackSegment, unit: DistanceUnit = DistanceUnit.KM) -> float:
+def calculate_segment_distance(
+    segment: TrackSegment, unit: DistanceUnit = DistanceUnit.KM
+) -> float:
     """Compute the total distance covered across all points in a segment.
 
     Args:
@@ -20,7 +22,9 @@ def calculate_segment_distance(segment: TrackSegment, unit: DistanceUnit = Dista
     )
 
 
-def calculate_total_distance(tracks: list[Track], unit: DistanceUnit = DistanceUnit.KM) -> float:
+def calculate_total_distance(
+    tracks: list[Track], unit: DistanceUnit = DistanceUnit.KM
+) -> float:
     """Compute the total distance covered across all tracks and their segments.
 
     Args:
